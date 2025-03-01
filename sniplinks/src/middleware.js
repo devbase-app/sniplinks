@@ -10,13 +10,17 @@ export async function middleware(req) {
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/premium'];
   const authRoutes = ['/login', '/signup'];
-  const publicRoutes = ['/api', '/not-found'];
+  const publicRoutes = ['/api', '/not-found', '/pricing'];
 
   const path = req.nextUrl.pathname;
 
-  // Skip auth check for public routes and shortCode routes
+  // Skip middleware for public routes, static files, and shortCode routes
   if (publicRoutes.some(route => path.startsWith(route)) || 
-      path.split('/').length === 2) { // This catches /{shortCode} routes
+      path === '/' ||
+      path.match(/^\/.+$/) || // Matches /{shortCode} routes
+      path.startsWith('/_next') ||
+      path.startsWith('/static') ||
+      path.includes('.')) {
     return res;
   }
 
