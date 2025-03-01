@@ -9,6 +9,10 @@ import UrlShortener from './components/UrlShortener';
 const LandingPage = () => {
   const router = useRouter();
 
+  const handleNavigation = (path) => {
+    router.push(path);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -30,129 +34,117 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-white to-purple-50 text-slate-700">
-      <header className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white sticky top-0 z-50 shadow-lg">
-        <motion.div 
-          className="flex items-center gap-2"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Image src="/file.svg" alt="Logo" width={24} height={24} className="invert" />
-          <h1 className="text-2xl font-bold">Sniplinks</h1>
-        </motion.div>
-        <motion.button 
-          className="px-6 py-2 bg-white text-purple-600 rounded-full hover:bg-purple-100 transform hover:scale-105 transition-all shadow-md"
-          onClick={() => router.push('/signup')}
-          whileHover={{ y: -2 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Get Started
-        </motion.button>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <header className="w-full bg-gray-800 p-4 shadow-lg fixed top-0 z-50">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <button 
+            onClick={() => handleNavigation('/')}
+            className="flex items-center hover:opacity-80 transition-opacity"
+          >
+            <Image src="/file.svg" alt="Logo" width={24} height={24} className="text-purple-400" />
+            <span className="ml-2 text-xl font-bold text-purple-400">Sniplinks</span>
+          </button>
+          <nav className="flex items-center gap-4">
+            <button
+              onClick={() => handleNavigation('/pricing')}
+              className="px-4 py-2 text-purple-400 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              Pricing
+            </button>
+            <button
+              onClick={() => handleNavigation('/login')}
+              className="px-4 py-2 text-purple-400 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => handleNavigation('/signup')}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Sign Up
+            </button>
+          </nav>
+        </div>
       </header>
 
-      <main className="flex-grow flex flex-col items-center justify-start p-6 max-w-6xl mx-auto w-full">
+      <main className="flex-1 container mx-auto px-4 pt-24">
+        {/* Hero Section */}
         <motion.section 
-          className="text-center mb-16 mt-12"
-          variants={containerVariants}
+          className="text-center py-20"
           initial="hidden"
           animate="visible"
+          variants={containerVariants}
         >
-          <motion.div variants={itemVariants}>
-            <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-              Simplify Your Links
-            </h2>
-            <p className="text-xl mb-8 text-slate-600">Transform long, complicated URLs into clean, memorable links.</p>
-          </motion.div>
+          <motion.h1 
+            className="text-5xl font-bold text-purple-400 mb-6"
+            variants={itemVariants}
+          >
+            Shorten Your Links, Expand Your Reach
+          </motion.h1>
+          <motion.p 
+            className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto"
+            variants={itemVariants}
+          >
+            Transform long URLs into memorable, trackable links. Perfect for social media, marketing campaigns, or sharing with your audience.
+          </motion.p>
           
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12"
-            variants={containerVariants}
-          >
-            <motion.div 
-              className="p-6 bg-white rounded-lg shadow-lg border-t-4 border-purple-400"
-              variants={itemVariants}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            >
-              <Image src="/file.svg" alt="Quick" width={40} height={40} className="mb-4 mx-auto" />
-              <h3 className="text-xl font-bold mb-3 text-purple-600">Quick & Easy</h3>
-              <p className="text-slate-600">Shorten links in seconds with our intuitive interface</p>
-            </motion.div>
-
-            <motion.div 
-              className="p-6 bg-white rounded-lg shadow-lg border-t-4 border-purple-500"
-              variants={itemVariants}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            >
-              <Image src="/window.svg" alt="Analytics" width={40} height={40} className="mb-4 mx-auto" />
-              <h3 className="text-xl font-bold mb-3 text-purple-600">Track & Analyze</h3>
-              <p className="text-slate-600">Get detailed insights about your links' performance</p>
-            </motion.div>
-
-            <motion.div 
-              className="p-6 bg-white rounded-lg shadow-lg border-t-4 border-purple-600"
-              variants={itemVariants}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            >
-              <Image src="/globe.svg" alt="Customize" width={40} height={40} className="mb-4 mx-auto" />
-              <h3 className="text-xl font-bold mb-3 text-purple-600">Customize</h3>
-              <p className="text-slate-600">Create branded links that reflect your identity</p>
-            </motion.div>
+          {/* URL Shortener Component */}
+          <motion.div variants={itemVariants}>
+            <UrlShortener />
           </motion.div>
         </motion.section>
 
-        <motion.section 
-          className="w-full my-16"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
-          <UrlShortener />
-        </motion.section>
-
-        <motion.section 
-          className="text-center bg-gradient-to-br from-purple-600 to-purple-700 text-white p-12 rounded-2xl w-full shadow-xl"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <h3 className="text-3xl font-bold mb-8">Premium Benefits</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <motion.div 
-              className="p-6 bg-white/10 rounded-xl backdrop-blur-sm"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Image src="/window.svg" alt="Analytics" width={32} height={32} className="mb-4 mx-auto invert" />
-              <h4 className="text-xl font-semibold mb-2">Advanced Analytics</h4>
-              <p className="text-purple-100">Deep insights into click patterns and user behavior</p>
-            </motion.div>
-            <motion.div 
-              className="p-6 bg-white/10 rounded-xl backdrop-blur-sm"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Image src="/globe.svg" alt="Domains" width={32} height={32} className="mb-4 mx-auto invert" />
-              <h4 className="text-xl font-semibold mb-2">Custom Domains</h4>
-              <p className="text-purple-100">Use your own domain for branded short links</p>
-            </motion.div>
-            <motion.div 
-              className="p-6 bg-white/10 rounded-xl backdrop-blur-sm"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Image src="/vercel.svg" alt="Support" width={32} height={32} className="mb-4 mx-auto invert" />
-              <h4 className="text-xl font-semibold mb-2">Priority Support</h4>
-              <p className="text-purple-100">24/7 dedicated customer support</p>
-            </motion.div>
+        {/* Features Section */}
+        <section className="py-20">
+          <h2 className="text-3xl font-bold text-center text-purple-400 mb-12">Why Choose Sniplinks?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+                <Image src="/globe.svg" alt="Global" width={24} height={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-purple-400 mb-3">Global Reach</h3>
+              <p className="text-gray-400">Share your links worldwide with fast, reliable redirection and tracking.</p>
+            </div>
+            
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+                <Image src="/window.svg" alt="Analytics" width={24} height={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-purple-400 mb-3">Detailed Analytics</h3>
+              <p className="text-gray-400">Track clicks, analyze traffic sources, and understand your audience better.</p>
+            </div>
+            
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+                <Image src="/file.svg" alt="Customize" width={24} height={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-purple-400 mb-3">Custom Links</h3>
+              <p className="text-gray-400">Create branded, memorable links that reflect your identity.</p>
+            </div>
           </div>
-          <motion.button 
-            className="mt-12 px-8 py-3 bg-white text-purple-600 rounded-full font-bold hover:bg-purple-100 transform hover:scale-105 transition-all shadow-md"
-            onClick={() => router.push('/premium')}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.95 }}
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 text-center">
+          <h2 className="text-3xl font-bold text-purple-400 mb-6">Ready to Get Started?</h2>
+          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+            Join thousands of users who trust Sniplinks for their link management needs.
+          </p>
+          <button
+            onClick={() => handleNavigation('/signup')}
+            className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-lg font-semibold"
           >
-            Upgrade to Premium
-          </motion.button>
-        </motion.section>
+            Create Your Free Account
+          </button>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 py-8">
+        <div className="container mx-auto px-4 text-center text-gray-400">
+          <p>&copy; 2024 Sniplinks. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };

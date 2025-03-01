@@ -1,31 +1,54 @@
 import { NextResponse } from 'next/server';
-import supabase from '../../supabaseClient';
+import { headers } from 'next/headers';
+import { supabaseServer } from '../../lib/supabase-server';
+import 'server-only';
 
-export async function GET(request, { params }) {
-  const shortCode = params.shortCode;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET(request) {
+  // Extract shortCode from URL
+  const url = new URL(request.url);
+  const shortCode = url.pathname.substring(1); // Remove leading slash
+
+  if (!shortCode) {
+    return Response.redirect(new URL('/not-found', url));
+  }
 
   try {
-    // Query the original URL from the database
-    const { data, error } = await supabase
+    const headersList = headers();
+    const { data: link } = await supabaseServer
       .from('links')
-      .select('original_url')
+      .select('*')
       .eq('short_code', shortCode)
       .single();
 
-    if (error || !data) {
-      return NextResponse.redirect(new URL('/', request.url));
+    if (!link?.original_url) {
+      return Response.redirect(new URL('/not-found', url));
     }
 
-    // Increment click count (optional)
-    await supabase
-      .from('links')
-      .update({ clicks: supabase.sql`clicks + 1` })
-      .eq('short_code', shortCode);
+    // Record click and update count concurrently
+    await Promise.allSettled([
+      supabaseServer
+        .from('clicks')
+        .insert([
+          {
+            link_id: link.id,
+            clicked_at: new Date().toISOString(),
+            referrer: headersList.get('referer') || null,
+            user_agent: headersList.get('user-agent') || null
+          }
+        ]),
+      supabaseServer
+        .from('links')
+        .update({ clicks: (link.clicks || 0) + 1 })
+        .eq('id', link.id)
+    ]);
 
-    // Redirect to the original URL
-    return NextResponse.redirect(data.original_url);
+    // Return permanent redirect
+    return Response.redirect(link.original_url, 301);
   } catch (error) {
     console.error('Error processing redirect:', error);
-    return NextResponse.redirect(new URL('/', request.url));
+    return Response.redirect(new URL('/not-found', url));
   }
 }

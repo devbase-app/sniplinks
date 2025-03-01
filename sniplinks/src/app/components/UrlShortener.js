@@ -1,19 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import supabase from '../../supabaseClient';
 
 const UrlShortener = () => {
   const [url, setUrl] = useState('');
+  const [customCode, setCustomCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [shortUrl, setShortUrl] = useState('');
   const [error, setError] = useState('');
+  const [isPremium, setIsPremium] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    checkPremiumStatus();
+  }, []);
+
+  const checkPremiumStatus = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', session.user.id)
+        .single();
+      
+      setIsPremium(profile?.subscription_tier === 'pro' || profile?.subscription_tier === 'enterprise');
+    }
+  };
+
   const handleShorten = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     if (!url) return;
     
     setIsLoading(true);
@@ -26,12 +46,17 @@ const UrlShortener = () => {
         throw new Error('Please enter a valid URL');
       }
 
+      const payload = {
+        url: url.trim(),
+        ...(isPremium && customCode && { customCode: customCode.trim() })
+      };
+
       const response = await fetch('/api/shorten', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: url.trim() }), // Trim whitespace
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -42,6 +67,7 @@ const UrlShortener = () => {
 
       setShortUrl(data.shortUrl);
       setUrl(''); // Clear input after successful shortening
+      setCustomCode('');
     } catch (error) {
       console.error('Error shortening URL:', error);
       setError(error.message);
@@ -82,8 +108,8 @@ const UrlShortener = () => {
       
       <h3 className="text-2xl font-bold mb-6 text-purple-600">Try it now!</h3>
       <form onSubmit={handleShorten} className="flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="flex-grow w-full">
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="flex-grow w-full space-y-4">
             <input
               type="url"
               value={url}
@@ -92,6 +118,17 @@ const UrlShortener = () => {
               className="w-full p-4 border-2 border-purple-200 rounded-lg focus:border-purple-600 focus:outline-none"
               required
             />
+            {isPremium && (
+              <input
+                type="text"
+                value={customCode}
+                onChange={(e) => setCustomCode(e.target.value)}
+                placeholder="Custom short code (optional)"
+                className="w-full p-4 border-2 border-purple-200 rounded-lg focus:border-purple-600 focus:outline-none"
+                pattern="[a-zA-Z0-9-_]+"
+                title="Only letters, numbers, hyphens, and underscores allowed"
+              />
+            )}
           </div>
           <motion.button
             type="submit"
@@ -134,7 +171,18 @@ const UrlShortener = () => {
           </motion.div>
         )}
       </form>
-      <p className="mt-4 text-sm text-slate-500">Sign up to customize your shortened links and track their performance!</p>
+      <p className="mt-4 text-sm text-slate-500">
+        {isPremium ? (
+          'You have access to premium features like custom short codes!'
+        ) : (
+          <button 
+            onClick={() => router.push('/premium')}
+            className="text-purple-600 hover:text-purple-700"
+          >
+            Sign up for premium to customize your shortened links and track their performance!
+          </button>
+        )}
+      </p>
     </div>
   );
 };
